@@ -2,6 +2,10 @@
 
 这是一个展示全球各国贸易顺差率分析的网站项目。
 
+## 在线访问
+
+访问地址：https://t1113.github.io/trade-analysis/
+
 ## 功能特点
 
 - 数据概述
@@ -20,12 +24,11 @@
 
 ## 如何使用
 
-1. 克隆仓库：
-```bash
-git clone https://github.com/T1113/trade-analysis.git
-```
+1. 在线访问：直接访问 https://t1113.github.io/trade-analysis/
 
-2. 直接打开 `index_fixed2.html` 文件即可查看分析结果
+2. 本地使用：
+   - 克隆仓库：`git clone https://github.com/T1113/trade-analysis.git`
+   - 直接打开 `index.html` 文件即可查看分析结果
 
 ## 数据来源
 
