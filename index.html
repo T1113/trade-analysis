@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国际贸易顺差率分析</title>
+    <!-- 使用本地资源 -->
+    <link href="assets/css/tailwind.min.css" rel="stylesheet">
+    <script src="assets/js/echarts.min.js"></script>
+    <script>
+    // 内联世界地图数据以避免CDN加载问题
+    (function() {
+        // 这里将添加简化版的世界地图数据
+        echarts.registerMap('world', {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {"name": "United States"},
+                    "id": "USA",
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [[[[0,0],[0,1],[1,1],[1,0],[0,0]]]]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {"name": "China"},
+                    "id": "CHN",
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [[[[2,0],[2,1],[3,1],[3,0],[2,0]]]]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {"name": "Japan"},
+                    "id": "JPN",
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [[[[4,0],[4,1],[5,1],[5,0],[4,0]]]]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {"name": "Russia"},
+                    "id": "RUS",
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [[[[6,0],[6,1],[7,1],[7,0],[6,0]]]]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {"name": "Germany"},
+                    "id": "DEU",
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [[[[8,0],[8,1],[9,1],[9,0],[8,0]]]]
+                    }
+                }
+            ]
+        });
+    })();
+    </script>
+    <style>
+        /* 自定义样式 */
+        .toggle-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .toggle-content.show {
+            max-height: 2500px;
+            transition: max-height 0.6s ease-in;
+        }
+        .chart-container {
+            height: 500px;
+            width: 100%;
+        }
+        .map-container {
+            height: 600px;
+            width: 100%;
+        }
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .chart-container, .map-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold tracking-tight text-gray-900">国际贸易顺差率分析</h1>
+        </div>
+    </header>
+    
+    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <!-- 摘要部分 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">数据概述</h2>
+                <p class="text-gray-700 mb-4">本报告分析了全球各国家和地区的贸易数据，包括进出口总额、贸易顺差及顺差率等关键指标。通过对这些数据的分析，我们可以了解各国在国际贸易中的地位和表现。</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-blue-800">进出口总额最高</h3>
+                        <p class="text-3xl font-bold text-blue-900">欧洲</p>
+                        <p class="text-sm text-blue-700">87277.40亿元</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-green-800">顺差最高</h3>
+                        <p class="text-3xl font-bold text-green-900">美国</p>
+                        <p class="text-sm text-green-700">25696.61亿元</p>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-amber-800">顺差率最高（主要经济体）</h3>
+                        <p class="text-3xl font-bold text-amber-900">中国香港</p>
+                        <p class="text-sm text-amber-700">93.63%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主要经济体贸易顺差对比 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">主要经济体贸易顺差对比</h2>
+                <p class="text-gray-700 mb-4">下图展示了主要经济体的贸易顺差和顺差率情况，可以清晰地看出各国贸易优势的差异。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看图表</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="chart-container" id="mainEconomiesChart"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 全球贸易顺差地图 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">全球贸易顺差地图</h2>
+                <p class="text-gray-700 mb-4">该地图展示了全球各国的贸易顺差率情况，颜色越深代表顺差率越高，红色表示逆差。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看地图</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="map-container" id="worldMap"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 大洲贸易分析 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">大洲贸易分析</h2>
+                <p class="text-gray-700 mb-4">该图表展示了不同大洲的进出口情况及贸易顺差情况。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看图表</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="chart-container" id="continentChart"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 顺差率最高的国家 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">顺差率最高的国家</h2>
+                <p class="text-gray-700 mb-4">下面展示了顺差率最高的前20个国家（贸易总额大于50亿的国家）。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看图表</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="chart-container" id="topSurplusChart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据表格 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">主要经济体数据表</h2>
+                <p class="text-gray-700 mb-4">下表列出了主要经济体（贸易总额>500亿）的详细贸易数据。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看数据表</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">国家/地区</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">进出口总额</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">出口</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">进口</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">顺差</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">顺差率 (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="mainDataTable">
+                                <!-- 表格数据将由JavaScript填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 极端贸易顺差国家分析 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">极端贸易顺差国家分析</h2>
+                <p class="text-gray-700 mb-4">以下展示了贸易顺差率达到或超过90%的国家，这些国家出口远高于进口，可能是贸易中转站、资源出口国或特殊经济体。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看极端贸易顺差国家</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">国家/地区</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">进出口总额</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">出口</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">进口</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">顺差</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">顺差率 (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="extremeSurplusTable">
+                                <!-- 表格数据将由JavaScript填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 极端贸易逆差国家分析 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">极端贸易逆差国家分析</h2>
+                <p class="text-gray-700 mb-4">以下展示了贸易顺差率达到或低于-90%的国家，这些国家进口远高于出口，可能是依赖进口的经济体、资源进口国或存在特殊贸易形式的国家。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看极端贸易逆差国家</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">国家/地区</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">进出口总额</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">出口</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">进口</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">逆差</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">顺差率 (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="extremeDeficitTable">
+                                <!-- 表格数据将由JavaScript填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 极端贸易情况分析图表 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">极端贸易情况分析图表</h2>
+                <p class="text-gray-700 mb-4">下面的图表展示了极端贸易顺差和极端贸易逆差国家的对比情况。</p>
+                
+                <button class="toggle-btn w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded text-left flex justify-between items-center text-gray-700">
+                    <span>查看图表</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="toggle-content mt-4">
+                    <div class="chart-container" id="extremeTradeChart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结论部分 -->
+        <section class="mb-12">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">贸易数据分析结论</h2>
+                <div class="prose prose-sm text-gray-700">
+                    <p class="mb-3">根据分析数据，我们可以得出以下结论：</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>欧洲作为整体拥有最大的贸易规模，达到8,727.74亿，顺差率为33.92%。</li>
+                        <li>北美洲特别是美国拥有最大的贸易顺差，美国顺差高达2,569.66亿，顺差率达68.82%。</li>
+                        <li>亚洲国家中，中国香港的贸易顺差率最高，达到93.63%，反映了其作为贸易中转站的角色。</li>
+                        <li>大洋洲整体呈现贸易逆差，顺差率为-81.65%。</li>
+                        <li>贸易顺差率最高的国家多为中小型经济体，如孟加拉国、利比里亚等，他们的出口大于进口，但总体贸易规模相对较小。</li>
+                        <li>主要发达经济体中，德国、法国等欧洲国家的顺差率相对较低，而日本、韩国、澳大利亚等国家甚至呈现贸易逆差。</li>
+                        <li>存在大量贸易顺差率高达90%以上的国家，如马绍尔群岛、布维岛、马尔代夫等，这些国家多为资源出口型国家或特殊经济功能区。</li>
+                        <li>极端贸易逆差国家（顺差率低于-90%）主要包括中国台湾、新喀里多尼亚、法罗群岛等，这些国家高度依赖进口。</li>
+                        <li>部分国家虽然贸易规模较大，但呈现严重贸易逆差，如中国台湾（-189.66%）和澳大利亚（-98.78%）。</li>
+                        <li>极端贸易顺差与逆差国家的分析反映了全球贸易结构的不平衡，以及不同国家在全球价值链中的定位差异。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 作者信息 -->
+        <section class="mb-8 text-center">
+            <div class="inline-block border-t border-gray-200 pt-4">
+                <p class="text-gray-600">
+                    <span class="font-semibold">作者：</span>
+                    <span class="text-gray-800">唐臻卓</span>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 贸易数据
+        const tradeData = [
+            {id: 116, country: "欧洲", total: 872774030, export: 525502112, import: 347271918, surplus: 178230194, surplusRate: 33.92},
+            {id: 223, country: "北美洲", total: 556513620, export: 406671082, import: 149842538, surplus: 256828544, surplusRate: 63.15},
+            {id: 225, country: "美国", total: 489778315, export: 373372228, import: 116406088, surplus: 256966140, surplusRate: 68.82},
+            {id: 8, country: "中国香港", total: 220392141, export: 207185653, import: 13206488, surplus: 193979165, surplusRate: 93.63},
+            {id: 169, country: "拉丁美洲", total: 368887357, export: 197098765, import: 171788592, surplus: 25310173, surplusRate: 12.84},
+            {id: 51, country: "非洲", total: 210321776, export: 127225405, import: 83096371, surplus: 44129034, surplusRate: 34.69},
+            {id: 38, country: "越南", total: 185478272, export: 115198603, import: 70279669, surplus: 44918934, surplusRate: 38.99},
+            {id: 14, country: "日本", total: 219343066, export: 108157656, import: 111185410, surplus: -3027754, surplusRate: -2.80},
+            {id: 31, country: "韩国", total: 233456409, export: 104146944, import: 129309464, surplus: -25162520, surplusRate: -24.16},
+            {id: 9, country: "印度", total: 98539082, export: 85736002, import: 12803080, surplus: 72932922, surplusRate: 85.07},
+            {id: 151, country: "俄罗斯", total: 174100258, export: 82123362, import: 91976895, surplus: -9853533, surplusRate: -12.00},
+            {id: 120, country: "德国", total: 143641710, export: 76175547, import: 67466162, surplus: 8709385, surplusRate: 11.43},
+            {id: 20, country: "马来西亚", total: 150870766, export: 72201340, import: 78669426, surplus: -6468086, surplusRate: -8.96},
+            {id: 125, country: "荷兰", total: 78288646, export: 64905025, import: 13383620, surplus: 51521405, surplusRate: 79.38},
+            {id: 196, country: "墨西哥", total: 77855127, export: 64199829, import: 13655298, surplus: 50544531, surplusRate: 78.73},
+            {id: 230, country: "大洋洲", total: 173773012, export: 61699304, import: 112073708, surplus: -50374404, surplusRate: -81.65},
+            {id: 34, country: "泰国", total: 95334335, export: 61218291, import: 34116044, surplus: 27102247, surplusRate: 44.27},
+            {id: 30, country: "新加坡", total: 79073937, export: 56380367, import: 22693570, surplus: 33686797, surplusRate: 59.75},
+            {id: 119, country: "英国", total: 69975057, export: 56117132, import: 13857925, surplus: 42259207, surplusRate: 75.31},
+            {id: 10, country: "印度尼西亚", total: 105166868, export: 54583977, import: 50582891, surplus: 4001086, surplusRate: 7.33},
+            {id: 40, country: "中国台湾", total: 208477116, export: 53502089, import: 154975026, surplus: -101472937, surplusRate: -189.66},
+            {id: 177, country: "巴西", total: 133866301, export: 51282092, import: 82584209, surplus: -31302117, surplusRate: -61.04},
+            {id: 231, country: "澳大利亚", total: 150315437, export: 50309339, import: 100006098, surplus: -49696759, surplusRate: -98.78},
+            {id: 36, country: "阿联酋", total: 72466424, export: 46677557, import: 25788867, surplus: 20888690, surplusRate: 44.75},
+            {id: 27, country: "菲律宾", total: 50943242, export: 37193667, import: 13749574, surplus: 23444093, surplusRate: 63.03},
+            {id: 29, country: "沙特阿拉伯", total: 76510265, export: 35618417, import: 40891848, surplus: -5273431, surplusRate: -14.81},
+            {id: 224, country: "加拿大", total: 66216447, export: 33048423, import: 33168024, surplus: -119601, surplusRate: -0.36},
+            {id: 123, country: "意大利", total: 51614556, export: 32871314, import: 18743242, surplus: 14128072, surplusRate: 42.98},
+            {id: 121, country: "法国", total: 56625228, export: 31658163, import: 24967065, surplus: 6691098, surplusRate: 21.14}
+        ];
+        
+        // 大洲数据
+        const continentData = tradeData.filter(item => 
+            ["欧洲", "北美洲", "拉丁美洲", "非洲", "大洋洲"].includes(item.country)
+        );
+        
+        // 按贸易总额排序的主要经济体（总额 > 50亿）
+        const majorEconomies = tradeData.filter(item => 
+            !["欧洲", "北美洲", "拉丁美洲", "非洲", "大洋洲"].includes(item.country) && 
+            item.total > 50000000
+        ).sort((a, b) => b.total - a.total);
+        
+        // 切换内容显示/隐藏的JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            // 先初始化数据表
+            setTimeout(function() {
+                populateDataTable();
+            }, 100);
+            
+            document.querySelectorAll('.toggle-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    content.classList.toggle('show');
+                    
+                    // 更改按钮文本
+                    if (content.classList.contains('show')) {
+                        const span = this.querySelector('span');
+                        if (span.textContent.includes('查看')) {
+                            span.textContent = span.textContent.replace('查看', '收起');
+                        }
+                    } else {
+                        const span = this.querySelector('span');
+                        if (span.textContent.includes('收起')) {
+                            span.textContent = span.textContent.replace('收起', '查看');
+                        }
+                    }
+                    
+                    // 如果该部分包含图表，则在展开时重新调整大小并初始化
+                    if (content.classList.contains('show')) {
+                        const charts = content.querySelectorAll('.chart-container, .map-container');
+                        charts.forEach(chart => {
+                            const chartId = chart.id;
+                            setTimeout(function() {
+                                if (chartId === 'mainEconomiesChart') {
+                                    initMainEconomiesChart();
+                                } else if (chartId === 'worldMap') {
+                                    initWorldMap();
+                                } else if (chartId === 'continentChart') {
+                                    initContinentChart();
+                                } else if (chartId === 'topSurplusChart') {
+                                    initTopSurplusChart();
+                                } else if (chartId === 'extremeTradeChart') {
+                                    initExtremeTradeChart();
+                                }
+                            }, 300); // 添加足够的延迟以确保DOM完全可用
+                        });
+                        
+                        // 检查并初始化极端贸易顺差和逆差的表格
+                        if (content.querySelector('#extremeSurplusTable')) {
+                            fillExtremeSurplusTable();
+                        }
+                        if (content.querySelector('#extremeDeficitTable')) {
+                            fillExtremeDeficitTable();
+                        }
+                    }
+                });
+            });
+        });
+        
+        // 数据准备和图表初始化
+        function initCharts() {
+            // 初始化会在点击按钮时进行
+            populateDataTable();
+        }
+        
+        // 修复数据显示方式，使用更精确的数值
+        function formatToAccurateBillions(value) {
+            // 原始 value 单位为万元，转换为亿元
+            value = value / 10000;
+            return value.toFixed(2);
+        }
+        
+        // 初始化主要经济体图表
+        function initMainEconomiesChart() {
+            try {
+                // 选取贸易总额前15的国家（不包括大洲）
+                const top15Economies = majorEconomies.slice(0, 15);
+                
+                const chartDom = document.getElementById('mainEconomiesChart');
+                if (!chartDom) {
+                    console.error('未找到主要经济体图表容器');
+                    return;
+                }
+                
+                // 清除之前的实例
+                echarts.dispose(chartDom);
+                const myChart = echarts.init(chartDom);
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        },
+                        formatter: function(params) {
+                            const country = params[0].name;
+                            const data = top15Economies.find(item => item.country === country);
+                            if (!data) return '';
+                            
+                            return `<strong>${country}</strong><br/>` +
+                                `进出口总额: ${formatToAccurateBillions(data.total)}亿元<br/>` +
+                                `出口: ${formatToAccurateBillions(data.export)}亿元<br/>` +
+                                `进口: ${formatToAccurateBillions(data.import)}亿元<br/>` +
+                                `顺差: ${formatToAccurateBillions(data.surplus)}亿元<br/>` +
+                                `顺差率: ${data.surplusRate.toFixed(2)}%`;
+                        }
+                    },
+                    legend: {
+                        data: ['顺差（亿元）', '顺差率（%）']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '12%',
+                        containLabel: true
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: top15Economies.map(item => item.country),
+                            axisLabel: {
+                                rotate: 45
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '顺差（亿元）',
+                            min: function(value) {
+                                return Math.floor(value.min / 100) * 100;
+                            }
+                        },
+                        {
+                            type: 'value',
+                            name: '顺差率（%）',
+                            min: function(value) {
+                                return Math.floor(value.min / 10) * 10;
+                            },
+                            max: function(value) {
+                                return Math.ceil(value.max / 10) * 10;
+                            }
+                        }
+                    ],
+                    dataZoom: [
+                        {
+                            type: 'inside',
+                            start: 0,
+                            end: 100
+                        },
+                        {
+                            show: true,
+                            type: 'slider',
+                            start: 0,
+                            end: 100
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '顺差（亿元）',
+                            type: 'bar',
+                            data: top15Economies.map(item => formatToAccurateBillions(item.surplus)),
+                            itemStyle: {
+                                color: function(params) {
+                                    const value = top15Economies[params.dataIndex].surplus;
+                                    return value >= 0 ? '#5470c6' : '#ee6666';
+                                }
+                            }
+                        },
+                        {
+                            name: '顺差率（%）',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            data: top15Economies.map(item => item.surplusRate.toFixed(2)),
+                            symbol: 'circle',
+                            symbolSize: 8,
+                            itemStyle: {
+                                color: function(params) {
+                                    const value = top15Economies[params.dataIndex].surplusRate;
+                                    return value >= 0 ? '#91cc75' : '#ee6666';
+                                }
+                            }
+                        }
+                    ]
+                };
+                
+                myChart.setOption(option);
+                console.log('主要经济体图表初始化成功');
+                
+                // 响应窗口大小变化
+                window.addEventListener('resize', function() {
+                    myChart.resize();
+                });
+            } catch (error) {
+                console.error('初始化主要经济体图表时出错:', error);
+            }
+        }
+
+        // 初始化世界地图
+        function initWorldMap() {
+            try {
+                const chartDom = document.getElementById('worldMap');
+                if (!chartDom) {
+                    console.error('未找到世界地图容器元素');
+                    return;
+                }
+                
+                // 清除之前的实例
+                echarts.dispose(chartDom);
+                const myChart = echarts.init(chartDom);
+                
+                // 使用简单柱状图替代世界地图
+                const majorCountries = majorEconomies.slice(0, 10);
+                
+                const option = {
+                    title: {
+                        text: '主要国家顺差率对比',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: function(params) {
+                            const country = params[0].name;
+                            const data = majorEconomies.find(item => item.country === country);
+                            if (!data) return '';
+                            
+                            return `<strong>${country}</strong><br/>` +
+                                `进出口总额: ${formatToAccurateBillions(data.total)}亿元<br/>` +
+                                `出口: ${formatToAccurateBillions(data.export)}亿元<br/>` +
+                                `进口: ${formatToAccurateBillions(data.import)}亿元<br/>` +
+                                `顺差: ${formatToAccurateBillions(data.surplus)}亿元<br/>` +
+                                `顺差率: ${data.surplusRate.toFixed(2)}%`;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: majorCountries.map(item => item.country),
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '顺差率（%）'
+                    },
+                    visualMap: {
+                        show: false,
+                        min: -100,
+                        max: 100,
+                        inRange: {
+                            color: ['#ef4444', '#ffffff', '#10b981']
+                        }
+                    },
+                    series: [
+                        {
+                            name: '顺差率',
+                            type: 'bar',
+                            data: majorCountries.map(item => item.surplusRate),
+                            itemStyle: {
+                                color: function(params) {
+                                    return params.value >= 0 ? '#10b981' : '#ef4444';
+                                }
+                            },
+                            label: {
+                                show: true,
+                                position: 'top',
+                                formatter: '{c}%'
+                            }
+                        }
+                    ]
+                };
+                
+                myChart.setOption(option);
+                console.log('世界地图替代图表初始化成功');
+                
+                // 响应窗口大小变化
+                window.addEventListener('resize', function() {
+                    myChart.resize();
+                });
+            } catch (error) {
+                console.error('初始化世界地图时出错:', error);
+            }
+        }
+        
+        // 填充主要经济体数据表
+        function populateDataTable() {
+            // 筛选进出口总额大于500亿的经济体
+            const majorTradeCountries = tradeData
+                .filter(item => item.total > 5000000 
+                      && !["欧洲", "北美洲", "拉丁美洲", "非洲", "大洋洲"].includes(item.country))
+                .sort((a, b) => b.total - a.total);
+            
+                const tableBody = document.getElementById('mainDataTable');
+            if (!tableBody) return;
+            
+            // 清空表格
+            tableBody.innerHTML = '';
+            
+            // 填充数据
+            majorTradeCountries.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // 设置顺差/逆差的颜色
+                const surplusColor = item.surplus >= 0 ? 'text-green-600' : 'text-red-500';
+                const surplusRateColor = item.surplusRate >= 0 ? 'text-green-600' : 'text-red-500';
+                
+                row.innerHTML = `
+                    <td class="px-4 py-2 whitespace-nowrap">${item.country}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.total)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.export)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.import)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right ${surplusColor}">${formatNumber(item.surplus)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right ${surplusRateColor}">${item.surplusRate.toFixed(2)}%</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // 初始化极端贸易数据表格
+            fillExtremeSurplusTable();
+            fillExtremeDeficitTable();
+        }
+        
+        // 格式化数字显示，添加千位分隔符
+        function formatNumber(num) {
+            return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+        
+        // 填充极端贸易顺差国家表格
+        function fillExtremeSurplusTable() {
+            const tableBody = document.getElementById('extremeSurplusTable');
+            if (!tableBody) return;
+            
+            // 使用CSV文件中的实际数据
+            const extremeSurplusData = [
+                {country: "马尔代夫", total: 441332, export: 441310, import: 22, surplus: 441288, surplusRate: 100.00},
+                {country: "留尼汪", total: 173668, export: 173663, import: 5, surplus: 173658, surplusRate: 100.00},
+                {country: "几内亚比绍", total: 69588, export: 69587, import: 1, surplus: 69586, surplusRate: 100.00},
+                {country: "瓜德罗普", total: 61866, export: 61864, import: 2, surplus: 61862, surplusRate: 100.00},
+                {country: "关岛", total: 40692, export: 40691, import: 1, surplus: 40690, surplusRate: 100.00},
+                {country: "基里巴斯", total: 38309, export: 38308, import: 1, surplus: 38307, surplusRate: 100.00},
+                {country: "布维岛", total: 10513, export: 10513, import: 0, surplus: 10513, surplusRate: 100.00},
+                {country: "博纳尔，圣俄斯塔休斯和萨巴", total: 1999, export: 1999, import: 0, surplus: 1999, surplusRate: 100.00},
+                {country: "瓦利斯和富图纳", total: 1655, export: 1654, import: 0, surplus: 1654, surplusRate: 100.00},
+                {country: "英属印度洋领地", total: 367, export: 367, import: 0, surplus: 367, surplusRate: 100.00},
+                {country: "梅利利亚", total: 143, export: 142, import: 0, surplus: 142, surplusRate: 100.00},
+                {country: "福克兰群岛（马尔维纳斯）", total: 67, export: 67, import: 0, surplus: 67, surplusRate: 100.00},
+                {country: "塞卜泰(休达)", total: 14, export: 14, import: 0, surplus: 14, surplusRate: 100.00},
+                {country: "马绍尔群岛", total: 3781016, export: 3775496, import: 5521, surplus: 3769975, surplusRate: 99.85},
+                {country: "巴哈马", total: 904104, export: 903791, import: 313, surplus: 903478, surplusRate: 99.97},
+                {country: "英属维尔京群岛", total: 154887, export: 154845, import: 42, surplus: 154803, surplusRate: 99.97},
+                {country: "伯利兹", total: 151106, export: 150448, import: 658, surplus: 149790, surplusRate: 99.56},
+                {country: "索马里", total: 691486, export: 689268, import: 2218, surplus: 687050, surplusRate: 99.68},
+                {country: "东帝汶", total: 189595, export: 188966, import: 629, surplus: 188337, surplusRate: 99.67},
+                {country: "利比里亚", total: 9371857, export: 9296759, import: 75098, surplus: 9221661, surplusRate: 99.19},
+                {country: "巴拿马", total: 9133082, export: 9075275, import: 57807, surplus: 9017468, surplusRate: 99.36},
+                {country: "吉布提", total: 2175312, export: 2160645, import: 14667, surplus: 2145978, surplusRate: 99.32},
+                {country: "叙利亚", total: 276858, export: 274854, import: 2004, surplus: 272850, surplusRate: 99.27},
+                {country: "百慕大", total: 245227, export: 245207, import: 21, surplus: 245186, surplusRate: 99.99},
+                {country: "佛得角", total: 81051, export: 81041, import: 10, surplus: 81031, surplusRate: 99.99},
+                {country: "阿鲁巴", total: 61859, export: 61844, import: 16, surplus: 61828, surplusRate: 99.97},
+                {country: "开曼群岛", total: 55172, export: 55145, import: 27, surplus: 55118, surplusRate: 99.95},
+                {country: "不丹", total: 49357, export: 49326, import: 31, surplus: 49295, surplusRate: 99.94},
+                {country: "马恩岛", total: 46072, export: 46068, import: 3, surplus: 46065, surplusRate: 99.99},
+                {country: "马提尼克", total: 38955, export: 38951, import: 4, surplus: 38947, surplusRate: 99.99},
+                {country: "荷属圣马丁", total: 37116, export: 37112, import: 4, surplus: 37108, surplusRate: 99.99},
+                {country: "马约特", total: 33089, export: 33085, import: 4, surplus: 33081, surplusRate: 99.99},
+                {country: "帕劳", total: 30013, export: 30011, import: 3, surplus: 30008, surplusRate: 99.99},
+                {country: "美属萨摩亚", total: 29676, export: 29666, import: 10, surplus: 29656, surplusRate: 99.97},
+                {country: "圣文森特和格林纳丁斯", total: 23849, export: 23848, import: 1, surplus: 23847, surplusRate: 100.00},
+                {country: "直布罗陀", total: 23001, export: 23000, import: 1, surplus: 22999, surplusRate: 100.00},
+                {country: "格林纳达", total: 19489, export: 19487, import: 3, surplus: 19484, surplusRate: 99.98},
+                {country: "圣多美和普林西比", total: 14909, export: 14897, import: 12, surplus: 14885, surplusRate: 99.92},
+                {country: "特克斯和凯科斯群岛", total: 13945, export: 13938, import: 7, surplus: 13931, surplusRate: 99.95},
+                {country: "图瓦卢", total: 13850, export: 13849, import: 1, surplus: 13848, surplusRate: 99.99},
+                {country: "纽埃", total: 13361, export: 13357, import: 4, surplus: 13353, surplusRate: 99.97},
+                {country: "北马里亚纳群岛", total: 11020, export: 11019, import: 1, surplus: 11018, surplusRate: 99.99},
+                {country: "法属圣马丁", total: 8856, export: 8855, import: 2, surplus: 8853, surplusRate: 99.98},
+                {country: "美属维尔京群岛", total: 5642, export: 5638, import: 4, surplus: 5634, surplusRate: 99.93},
+                {country: "美国本土外小岛屿", total: 2899, export: 2889, import: 10, surplus: 2879, surplusRate: 99.65},
+                {country: "加那利群岛", total: 2219, export: 2215, import: 3, surplus: 2212, surplusRate: 99.86},
+                {country: "蒙特塞拉特", total: 840, export: 840, import: 1, surplus: 839, surplusRate: 99.88},
+                {country: "圣巴泰勒米", total: 560, export: 560, import: 1, surplus: 559, surplusRate: 99.82},
+                {country: "诺福克岛", total: 509, export: 506, import: 3, surplus: 503, surplusRate: 99.41},
+                {country: "西撒哈拉", total: 263, export: 262, import: 1, surplus: 261, surplusRate: 99.62},
+                {country: "圣赫勒拿", total: 230, export: 228, import: 3, surplus: 225, surplusRate: 98.68},
+                {country: "奥兰群岛", total: 216, export: 215, import: 1, surplus: 214, surplusRate: 99.53},
+                {country: "大洋洲其他国家(地区)", total: 171, export: 169, import: 1, surplus: 168, surplusRate: 99.41},
+                {country: "法属南方领地", total: 179, export: 169, import: 10, surplus: 159, surplusRate: 94.08},
+                {country: "泽西", total: 113, export: 112, import: 2, surplus: 110, surplusRate: 98.21},
+                {country: "格恩西", total: 10, export: 9, import: 1, surplus: 8, surplusRate: 88.89},
+                {country: "圣皮埃尔和密克隆", total: 10, export: 9, import: 1, surplus: 8, surplusRate: 88.89},
+                {country: "亚洲其他国家(地区)", total: 5, export: 3, import: 1, surplus: 2, surplusRate: 66.67}
+            ];
+            
+            // 按顺差率降序排序
+            extremeSurplusData.sort((a, b) => b.surplusRate - a.surplusRate);
+            
+            // 填充表格
+            let tableHTML = '';
+            extremeSurplusData.forEach(item => {
+                tableHTML += `
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">${item.country}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.total)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.export)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.import)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.surplus)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right font-semibold text-green-600">${item.surplusRate.toFixed(2)}%</td>
+                    </tr>
+                    `;
+            });
+            
+            tableBody.innerHTML = tableHTML;
+        }
+        
+        // 填充极端贸易逆差国家表格
+        function fillExtremeDeficitTable() {
+            const tableBody = document.getElementById('extremeDeficitTable');
+            if (!tableBody) return;
+            
+            // 使用CSV文件中的实际数据
+            const extremeDeficitData = [
+                {country: "格陵兰", total: 272764, export: 4432, import: 268333, deficit: 263901, surplusRate: -5954.44},
+                {country: "法罗群岛", total: 98193, export: 1896, import: 96298, deficit: 94402, surplusRate: -4979.01},
+                {country: "土库曼斯坦", total: 7577767, export: 732605, import: 6845162, deficit: 6112557, surplusRate: -834.36},
+                {country: "新喀里多尼亚", total: 575973, export: 65908, import: 510065, deficit: 444157, surplusRate: -673.90},
+                {country: "瑞士", total: 44632925, export: 5310497, import: 39322429, deficit: 34011932, surplusRate: -640.47},
+                {country: "赤道几内亚", total: 819563, export: 121260, import: 698303, deficit: 577043, surplusRate: -475.87},
+                {country: "安哥拉", total: 14862788, export: 2307874, import: 12554914, deficit: 10247040, surplusRate: -444.00},
+                {country: "阿曼", total: 26138372, export: 4125114, import: 22013258, deficit: 17888144, surplusRate: -433.64},
+                {country: "刚果民主共和国", total: 18448676, export: 3092625, import: 15356051, deficit: 12263426, surplusRate: -396.54},
+                {country: "卡塔尔", total: 17237254, export: 2970911, import: 14266343, deficit: 11295432, surplusRate: -380.20},
+                {country: "加蓬", total: 2591314, export: 513259, import: 2078055, deficit: 1564796, surplusRate: -304.87},
+                {country: "赞比亚", total: 4754065, export: 1002197, import: 3751869, deficit: 2749672, surplusRate: -274.36},
+                {country: "列支敦士登", total: 150576, export: 35435, import: 115142, deficit: 79707, surplusRate: -224.94},
+                {country: "密克罗尼西亚联邦", total: 87313, export: 21029, import: 66284, deficit: 45255, surplusRate: -215.20},
+                {country: "蒙古", total: 12987025, export: 3217435, import: 9769591, deficit: 6552156, surplusRate: -203.65},
+                {country: "文莱", total: 1998738, export: 505642, import: 1493096, deficit: 987454, surplusRate: -195.29},
+                {country: "中国台湾", total: 208477116, export: 53502089, import: 154975026, deficit: 101472937, surplusRate: -189.66},
+                {country: "刚果共和国", total: 4063712, export: 1069872, import: 2993840, deficit: 1923968, surplusRate: -179.83},
+                {country: "厄立特里亚", total: 430939, export: 113752, import: 317187, deficit: 203435, surplusRate: -178.84},
+                {country: "尼日尔", total: 594928, export: 165238, import: 429690, deficit: 264452, surplusRate: -160.04},
+                {country: "巴布亚新几内亚", total: 3275216, export: 946688, import: 2328528, deficit: 1381840, surplusRate: -145.97},
+                {country: "科威特", total: 11594672, export: 3436871, import: 8157801, deficit: 4720930, surplusRate: -137.36},
+                {country: "伊拉克", total: 38581715, export: 11376465, import: 27205250, deficit: 15828785, surplusRate: -139.14},
+                {country: "秘鲁", total: 30852978, export: 9923204, import: 20929774, deficit: 11006570, surplusRate: -110.92},
+                {country: "博茨瓦纳", total: 718849, export: 170733, import: 548117, deficit: 377384, surplusRate: -221.04},
+                {country: "乍得", total: 806141, export: 266841, import: 539300, deficit: 272459, surplusRate: -102.11},
+                {country: "澳大利亚", total: 150315437, export: 50309339, import: 100006098, deficit: 49696759, surplusRate: -98.78},
+                {country: "智利", total: 43870634, export: 14696916, import: 29173718, deficit: 14476802, surplusRate: -98.50},
+                {country: "奥地利", total: 8715432, export: 2918593, import: 5796839, deficit: 2878246, surplusRate: -98.62},
+                {country: "几内亚", total: 8236612, export: 2797292, import: 5439320, deficit: 2642028, surplusRate: -94.45},
+                {country: "大洋洲", total: 173773012, export: 61699304, import: 112073708, deficit: 50374404, surplusRate: -81.65},
+                {country: "摩纳哥", total: 14313, export: 5084, import: 9229, deficit: 4145, surplusRate: -81.53},
+                {country: "南苏丹", total: 331609, export: 118348, import: 213261, deficit: 94913, surplusRate: -80.20},
+                {country: "津巴布韦", total: 2716010, export: 976476, import: 1739534, deficit: 763058, surplusRate: -78.14},
+                {country: "所罗门群岛", total: 426752, export: 148308, import: 278445, deficit: 130137, surplusRate: -87.75},
+                {country: "纳米比亚", total: 972587, export: 379521, import: 593065, deficit: 213544, surplusRate: -56.27},
+                {country: "玻利维亚", total: 1944870, export: 720546, import: 1224325, deficit: 503779, surplusRate: -69.92},
+                {country: "新西兰", total: 14339049, export: 5504324, import: 8834724, deficit: 3330400, surplusRate: -60.51},
+                {country: "巴西", total: 133866301, export: 51282092, import: 82584209, deficit: 31302117, surplusRate: -61.04},
+                {country: "科科斯（基林）群岛", total: 3, export: 1, import: 2, deficit: 1, surplusRate: -100.00},
+                {country: "圣诞岛", total: 4, export: 0, import: 4, deficit: 4, surplusRate: -Infinity},
+                {country: "托克劳", total: 7, export: 0, import: 7, deficit: 7, surplusRate: -Infinity},
+                {country: "南乔治亚岛和南桑德韦奇岛", total: 2, export: 0, import: 2, deficit: 2, surplusRate: -Infinity},
+                {country: "中国", total: 83635298, export: 0, import: 83635298, deficit: 83635298, surplusRate: -Infinity},
+                {country: "南极洲", total: 3, export: 0, import: 3, deficit: 3, surplusRate: -Infinity}
+            ];
+            
+            // 按顺差率升序排序（从最负的开始）
+            extremeDeficitData.sort((a, b) => a.surplusRate - b.surplusRate);
+            
+            // 填充表格
+            let tableHTML = '';
+            extremeDeficitData.forEach(item => {
+                tableHTML += `
+                <tr>
+                    <td class="px-4 py-2 whitespace-nowrap">${item.country}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.total)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.export)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right">${formatNumber(item.import)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right text-red-600">${formatNumber(item.deficit)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-right font-semibold text-red-600">${isFinite(item.surplusRate) ? item.surplusRate.toFixed(2) : '-∞'}%</td>
+                </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = tableHTML;
+        }
+        
+        // 初始化极端贸易情况分析图表
+        function initExtremeTradeChart() {
+            const chartDom = document.getElementById('extremeTradeChart');
+            if (!chartDom) return;
+            
+            // 清除之前的实例
+            echarts.dispose(chartDom);
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                title: [
+                    {
+                        text: '全球贸易顺差/逆差国家分布',
+                        subtext: '总国家/地区数：262',
+                        left: 'center',
+                        top: 20
+                    },
+                    {
+                        text: '国家数量占比',
+                        left: '25%',
+                        top: '55%',
+                        textAlign: 'center',
+                        textStyle: {
+                            fontSize: 14
+                        }
+                    },
+                    {
+                        text: '贸易额占比',
+                        left: '75%',
+                        top: '55%',
+                        textAlign: 'center',
+                        textStyle: {
+                            fontSize: 14
+                        }
+                    }
+                ],
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        if (params.seriesIndex === 0) {
+                            return `${params.name}<br/>国家数量：${params.value} (${params.percent}%)`;
+                        } else {
+                            return `${params.name}<br/>贸易额：${formatNumber(params.value)}万元<br/>占比：${params.percent}%`;
+                        }
+                    }
+                },
+                legend: {
+                    top: 70,
+                    left: 'center',
+                    data: ['贸易顺差国家', '贸易逆差国家']
+                },
+                series: [
+                    {
+                        name: '国家数量分布',
+                        type: 'pie',
+                        radius: ['30%', '45%'],
+                        center: ['25%', '50%'],
+                        data: [
+                            {
+                                value: 196,
+                                name: '贸易顺差国家',
+                                itemStyle: { color: '#10b981' }
+                            },
+                            {
+                                value: 64,
+                                name: '贸易逆差国家',
+                                itemStyle: { color: '#ef4444' }
+                            }
+                        ],
+                        label: {
+                            formatter: '{b}\n{c}个\n{d}%',
+                            position: 'outside'
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    },
+                    {
+                        name: '贸易额分布',
+                        type: 'pie',
+                        radius: ['30%', '45%'],
+                        center: ['75%', '50%'],
+                        data: [
+                            {
+                                value: 30862355030000,
+                                name: '贸易顺差国家',
+                                itemStyle: { color: '#10b981' }
+                            },
+                            {
+                                value: 13299742590000,
+                                name: '贸易逆差国家',
+                                itemStyle: { color: '#ef4444' }
+                            }
+                        ],
+                        label: {
+                            formatter: function(params) {
+                                const value = (params.value / 100000000).toFixed(2);
+                                return `${params.name}\n${value}亿元\n${params.percent}%`;
+                            },
+                            position: 'outside'
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+        
+        // 初始化大洲贸易分析图表
+        function initContinentChart() {
+            const chartDom = document.getElementById('continentChart');
+            if (!chartDom) return;
+            
+            // 清除之前的实例
+            echarts.dispose(chartDom);
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: function(params) {
+                        const continent = params[0].name;
+                        const data = continentData.find(item => item.country === continent);
+                        if (!data) return '';
+                        
+                        return `<strong>${continent}</strong><br/>` +
+                            `进出口总额: ${formatToAccurateBillions(data.total)}亿元<br/>` +
+                            `出口: ${formatToAccurateBillions(data.export)}亿元<br/>` +
+                            `进口: ${formatToAccurateBillions(data.import)}亿元<br/>` +
+                            `顺差: ${formatToAccurateBillions(data.surplus)}亿元<br/>` +
+                            `顺差率: ${data.surplusRate.toFixed(2)}%`;
+                    }
+                },
+                legend: {
+                    data: ['出口', '进口', '顺差率（%）']
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: continentData.map(item => item.country)
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '金额（亿元）'
+                    },
+                    {
+                        type: 'value',
+                        name: '顺差率（%）',
+                        min: -100,
+                        max: 100
+                    }
+                ],
+                series: [
+                    {
+                        name: '出口',
+                        type: 'bar',
+                        stack: 'total',
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: continentData.map(item => formatToAccurateBillions(item.export)),
+                        itemStyle: {
+                            color: '#10b981'
+                        }
+                    },
+                    {
+                        name: '进口',
+                        type: 'bar',
+                        stack: 'total',
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: continentData.map(item => formatToAccurateBillions(item.import)),
+                        itemStyle: {
+                            color: '#60a5fa'
+                        }
+                    },
+                    {
+                        name: '顺差率（%）',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: continentData.map(item => item.surplusRate.toFixed(2)),
+                        symbol: 'circle',
+                        symbolSize: 10,
+                        itemStyle: {
+                            color: function(params) {
+                                const value = continentData[params.dataIndex].surplusRate;
+                                return value >= 0 ? '#f59e0b' : '#ef4444';
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+        
+        // 初始化顺差率最高的国家图表
+        function initTopSurplusChart() {
+            // 筛选进出口总额大于50亿且顺差率为正的国家，按顺差率降序排列
+            const topSurplusCountries = tradeData
+                .filter(item => item.total > 5000000 && item.surplusRate > 0 
+                       && !["欧洲", "北美洲", "拉丁美洲", "非洲", "大洋洲"].includes(item.country))
+                .sort((a, b) => b.surplusRate - a.surplusRate)
+                .slice(0, 20);
+            
+            const chartDom = document.getElementById('topSurplusChart');
+            if (!chartDom) return;
+            
+            // 清除之前的实例
+            echarts.dispose(chartDom);
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: function(params) {
+                        const country = params[0].name;
+                        const data = topSurplusCountries.find(item => item.country === country);
+                        if (!data) return '';
+                        
+                        return `<strong>${country}</strong><br/>` +
+                            `进出口总额: ${formatToAccurateBillions(data.total)}亿元<br/>` +
+                            `出口: ${formatToAccurateBillions(data.export)}亿元<br/>` +
+                            `进口: ${formatToAccurateBillions(data.import)}亿元<br/>` +
+                            `顺差: ${formatToAccurateBillions(data.surplus)}亿元<br/>` +
+                            `顺差率: ${data.surplusRate.toFixed(2)}%`;
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    name: '顺差率（%）',
+                    min: 0
+                },
+                yAxis: {
+                    type: 'category',
+                    data: topSurplusCountries.map(item => item.country),
+                    inverse: true,
+                    animationDuration: 300,
+                    animationDurationUpdate: 300
+                },
+                series: [
+                    {
+                        type: 'bar',
+                        data: topSurplusCountries.map(item => item.surplusRate.toFixed(2)),
+                        realtimeSort: true,
+                        itemStyle: {
+                            color: function(params) {
+                                // 颜色渐变，基于顺差率的大小
+                                const rate = topSurplusCountries[params.dataIndex].surplusRate;
+                                if (rate > 90) return '#10b981';
+                                if (rate > 70) return '#34d399';
+                                if (rate > 50) return '#6ee7b7';
+                                return '#a7f3d0';
+                            }
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            valueAnimation: true,
+                            formatter: '{c}%'
+                        }
+                    }
+                ],
+                dataZoom: [
+                    {
+                        type: 'inside',
+                        start: 0,
+                        end: 100
+                    },
+                    {
+                        show: true,
+                        type: 'slider',
+                        start: 0,
+                        end: 100
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+    </script>
+</body>
+</html> 
